@@ -1,0 +1,18 @@
+[package]
+name = "dumbo_config"
+version = "0.1.0"
+edition = "2021"
+authors = ["zongying_cao <zongying_cao@163.com>"]
+description = "a config loader"
+documentation = "https://docs.rs/dumbo_config"
+repository = "https://github.com/cao5zy/dumbo-config"
+license = "MIT"
+
+[dependencies]
+serde = {version="1.0.219", features = ["derive"]}
+serde_yaml = "0.9.34"
+
+[dev-dependencies]
+serial_test = "3.2.0"
+tempfile = "3.20.0"
+

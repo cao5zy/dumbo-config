@@ -13,6 +13,16 @@ name: "test config"
 value: 32
 ```
 
+### configuration file name
+The following file names is qualified.
+- config.yml
+- config.yaml
+- config.{ENV}.yml
+- config.{ENV}.yaml
+Where `ENV` is the value of the environment variable "ENV". If "ENV" is not set, it defaults to searching `config.yml` and `config.yaml`.
+
+
+
 Rust file for loading TestConfig
 ```rust
 use dumbo_config::load_config;

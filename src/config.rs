@@ -3,6 +3,7 @@ use serde_yaml;
 use std::env;
 use std::fs::File;
 use std::io::Read;
+use std::path::Path;
 
 pub fn load_config_from_file<T, P>(path: P) -> Option<T>
 where
@@ -33,7 +34,7 @@ where
 /// # Example
 /// ```
 /// use serde::Deserialize;
-/// 
+///
 /// #[derive(Deserialize)]
 /// struct AppConfig {
 ///     server_port: u16,
@@ -72,4 +73,41 @@ where
     }
 
     None
+}
+
+/// Loads configuration from a specific YAML file path.
+///
+/// This function is similar to `load_config_from_file` but more explicitly accepts
+/// a path parameter and provides better documentation. It is useful when you need
+/// to load configuration from non-standard locations or specifically named files.
+///
+/// # Arguments
+/// * `config_path` - The path to the configuration file to load.
+///
+/// # Returns
+/// `Some(T)` if the configuration file is found and parsed successfully,
+/// `None` otherwise.
+///
+/// # Example
+/// ```
+/// use serde::Deserialize;
+/// use std::path::Path;
+///
+/// #[derive(Deserialize)]
+/// struct AppConfig {
+///     server_port: u16,
+///     debug_mode: bool,
+/// }
+///
+/// if let Some(config) = dumbo_config::load_named_config::<AppConfig>(Path::new("custom-config.yml")) {
+///     println!("Server port: {}", config.server_port);
+/// } else {
+///     eprintln!("Failed to load configuration");
+/// }
+/// ```
+pub fn load_named_config<T>(config_path: &Path) -> Option<T>
+where
+    T: for<'de> Deserialize<'de>,
+{
+    load_config_from_file(config_path)
 }

@@ -21,11 +21,11 @@ The following file names is qualified.
 - config.{ENV}.yaml
 Where `ENV` is the value of the environment variable "ENV". If "ENV" is not set, it defaults to searching `config.yml` and `config.yaml`.
 
-
+You can also use `load_named_config` with specified config file.
 
 Rust file for loading TestConfig
 ```rust
-use dumbo_config::load_config;
+use dumbo_config::{load_config, load_named_config};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, PartialEq)]
@@ -37,4 +37,8 @@ struct TestConfig {
 ...
 
 let config: Option<TestConfig> = load_config();
+
+let config_path: Path = ...;
+
+let config: Option<TestConfig> = load_named_config(&config_path);
 ```

@@ -78,14 +78,14 @@ let config: AppConfig = load_config_with_param(&param)?;
 // Load from environment variables only
 let param = LoadingParam {
     file: None,
-    env_prefix: Some(EnvConfig::new("MYAPP".to_string(), None)),
+    env_prefix: Some(EnvConfig::new("MY_APP".to_string(), None)),
 };
 let config: AppConfig = load_config_with_param(&param)?;
 
 // Load from both file and environment variables (env vars take precedence)
 let param = LoadingParam {
     file: Some(Path::new("config.yaml")),
-    env_prefix: Some(EnvConfig::new("MYAPP".to_string(), Some("-".to_string()))),
+    env_prefix: Some(EnvConfig::new("MY_APP".to_string(), None)),
 };
 let config: AppConfig = load_config_with_param(&param)?;
 ```
@@ -96,6 +96,32 @@ The `EnvConfig` struct defines how to load configuration from environment variab
 
 - `name`: The prefix for environment variables (e.g., "MYAPP" for variables like "MYAPP_DATABASE_URL")
 - `separator`: The separator character used in environment variable names. 鉴于Rust中的字段名称通常也用"_"分割，因此，环境变量的分割符默认为"__"
+
+**Example with MY_APP prefix:**
+Given the following configuration structure:
+```rust
+struct DatabaseConfig {
+    host: String,
+    port: u16,
+    credentials: Credentials,
+}
+
+struct Credentials {
+    username: String,
+    password: String,
+}
+```
+
+With `EnvConfig::new("MY_APP".to_string(), None)`, the corresponding environment variables would be:
+```bash
+# Top-level fields
+export MY_APP__HOST="localhost"
+export MY_APP__PORT="5432"
+
+# Nested fields (using double underscore as separator)
+export MY_APP__CREDENTIALS__USERNAME="myuser"
+export MY_APP__CREDENTIALS__PASSWORD="mypass"
+```
 
 **Note**: The environment variable prefix should not contain the separator character. For example, if your prefix is "RESUME_AGENT" and separator is "_", this will cause a configuration loading error.
 
@@ -108,10 +134,10 @@ The library provides detailed logging at the INFO level:
 
 **Note**: The `SHOW_SETTINGS` environment variable is only checked when `env_prefix` is configured. This is because if no `env_prefix` is set, it means the user is loading configuration directly from files, and they can simply inspect the configuration files directly to view the settings. When environment variables are used for configuration (via `env_prefix`), the actual values may not be easily visible, so `SHOW_SETTINGS` provides a way to log the loaded configuration for debugging purposes.
 
-To enable configuration debugging, set the `SHOW_SETTINGS` environment variable:
+To enable configuration debugging, set the `SHOW_SETTINGS` environment variable if the `env_prefix` is 'MY_APP'
 
 ```bash
-export SHOW-settings=true
+export MY_APP__SHOW_SETTINGS=true
 ./your-application
 ```
 
@@ -121,7 +147,7 @@ Supported values for `SHOW_SETTINGS` (case-insensitive): "true", "1", "yes", "on
 
 The library provides comprehensive error handling with运维-friendly error messages:
 
-- **InvalidLoadingParam**: Both file and env_prefix are None - tells运维人员 what needs to be configured
+- **InvalidLoadingParam**: Both file and env_prefix are None - tells Ops staff what needs to be configured
 - **InvalidEnvConfig**: Environment prefix contains separator character
 - **FileNotFound**: Specified configuration file does not exist
 - **EnvPrefixNotFound**: No environment variables found with the specified prefix

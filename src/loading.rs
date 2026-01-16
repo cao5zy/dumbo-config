@@ -150,10 +150,12 @@ fn should_show_settings(param: &LoadingParam) -> bool {
         match env::var(&env_full_name) {
             Ok(value) => {
                 let lower_value = value.to_lowercase();
-                lower_value == "true"
+                let result = lower_value == "true"
                     || lower_value == "1"
                     || lower_value == "yes"
-                    || lower_value == "on"
+                    || lower_value == "on";
+                log::info!("{} is set, return {}", &env_full_name, result);
+                result
             }
             Err(_) => {
                 log::warn!("{} not set, return false", &env_full_name);

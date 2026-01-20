@@ -1,3 +1,4 @@
+
 # dumbo-config  
 dumbo-config is a config loader.  
 
@@ -131,6 +132,7 @@ The library provides detailed logging at the INFO level:
 
 - Always logs which configuration sources are being used
 - When `env_prefix` is set and the `SHOW_SETTINGS` environment variable is set to "true" (case-insensitive), logs that configuration was loaded successfully
+- If no environment variables are found with the specified prefix, a warning is logged and configuration loading continues without environment variables
 
 **Note**: The `SHOW_SETTINGS` environment variable is only checked when `env_prefix` is configured. This is because if no `env_prefix` is set, it means the user is loading configuration directly from files, and they can simply inspect the configuration files directly to view the settings. When environment variables are used for configuration (via `env_prefix`), the actual values may not be easily visible, so `SHOW_SETTINGS` provides a way to log the loaded configuration for debugging purposes.
 
@@ -150,7 +152,6 @@ The library provides comprehensive error handling with运维-friendly error mess
 - **InvalidLoadingParam**: Both file and env_prefix are None - tells Ops staff what needs to be configured
 - **InvalidEnvConfig**: Environment prefix contains separator character
 - **FileNotFound**: Specified configuration file does not exist
-- **EnvPrefixNotFound**: No environment variables found with the specified prefix
 - **ShowSettingsParseError**: SHOW_SETTINGS environment variable cannot be parsed as boolean
 
 All errors are wrapped in the `ConfigError` enum and implement the standard `Error` trait.

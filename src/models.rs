@@ -37,8 +37,6 @@ pub enum ConfigError {
     Config(config::ConfigError),
     /// Configuration file not found
     FileNotFound(std::path::PathBuf),
-    /// Environment variable prefix not found (no environment variables with the given prefix exist)
-    EnvPrefixNotFound(String),
     /// SHOW_SETTINGS environment variable cannot be parsed as boolean
     ShowSettingsParseError(String),
     /// Invalid loading parameter: both file and env_prefix are None
@@ -53,9 +51,6 @@ impl fmt::Display for ConfigError {
             ConfigError::Config(err) => write!(f, "Config error: {}", err),
             ConfigError::FileNotFound(path) => {
                 write!(f, "Configuration file not found: {:?}", path)
-            }
-            ConfigError::EnvPrefixNotFound(prefix) => {
-                write!(f, "No environment variables found with prefix: {}", prefix)
             }
             ConfigError::ShowSettingsParseError(value) => {
                 write!(

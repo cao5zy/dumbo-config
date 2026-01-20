@@ -112,7 +112,10 @@ fn get_file_format(file_path: &Path) -> FileFormat {
     }
 }
 
-/// Adds environment variable source to the configuration builder
+/// Adds environment variable source to the configuration builder if environment variables exist
+///
+/// Returns the same builder if no environment variables with the specified prefix exist (logs a warning).
+/// Otherwise, returns a new builder with the environment source added.
 fn add_env_source(
     config_builder: config::ConfigBuilder<config::builder::DefaultState>,
     env_config: &EnvConfig,
@@ -126,9 +129,10 @@ fn add_env_source(
         .map(|(key, _)| key)
         .collect();
 
-    // If no environment variables found with this prefix, return error
+    // If no environment variables found with this prefix, log and return the original builder
     if env_vars_with_prefix.is_empty() {
-        return Err(ConfigError::EnvPrefixNotFound(prefix.clone()));
+        log::warn!("No environment variables found with prefix: '{}'. Skipping environment variable loading.", prefix);
+        return Ok(config_builder);
     }
 
     // Add source and return new builder
@@ -141,11 +145,11 @@ fn add_env_source(
 
 /// Checks if SHOW_SETTINGS environment variable is set to true
 fn should_show_settings(param: &LoadingParam) -> bool {
-    if let Some(env_prefix) = &param.env_prefix {
+    if let Some(env_config) = &param.env_prefix {
         let env_full_name = format!(
             "{}{}SHOW_SETTINGS",
-            &env_prefix.name,
-            &env_prefix.get_separator()
+            &env_config.name,
+            &env_config.get_separator()
         );
         match env::var(&env_full_name) {
             Ok(value) => {

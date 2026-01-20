@@ -77,4 +77,48 @@ mod tests {
         assert_eq!(env_config.get_separator(), "-");
         info!("Completed test: test_env_config_custom_separator successfully");
     }
+
+    #[test]
+    fn test_no_env_vars_with_prefix() {
+        info!("Starting test: test_no_env_vars_with_prefix");
+        // Use a prefix that is very unlikely to exist in the environment
+        let unique_prefix = "NONEXISTENT_PREFIX_12345";
+
+        // Verify that no environment variables exist with this prefix
+        let env_vars_with_prefix: Vec<String> = std::env::vars()
+            .filter(|(key, _)| key.starts_with(unique_prefix))
+            .map(|(key, _)| key)
+            .collect();
+        assert!(
+            env_vars_with_prefix.is_empty(),
+            "Test environment has unexpected variables with prefix {}",
+            unique_prefix
+        );
+
+        let param = LoadingParam {
+            file: None,
+            env_prefix: Some(EnvConfig::new(unique_prefix.to_string(), None)),
+        };
+
+        // This should not return an error, but rather load an empty configuration
+        // which will fail to deserialize into TestConfig due to missing fields
+        let result = crate::loading::load_config_with_param::<TestConfig>(&param);
+        debug!("Result of load_config_with_param: {:?}", result);
+
+        // The result should be an error, but not EnvPrefixNotFound
+        // It should be a config::ConfigError due to missing required fields
+        match result {
+            Err(ConfigError::Config(_)) => {
+                // This is expected - config crate error due to missing fields
+                info!("Got expected config error due to missing fields");
+            }
+            Err(e) => {
+                panic!("Unexpected error type: {:?}", e);
+            }
+            Ok(_) => {
+                panic!("Expected an error due to missing configuration fields");
+            }
+        }
+        info!("Completed test: test_no_env_vars_with_prefix successfully");
+    }
 }

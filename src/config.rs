@@ -3,17 +3,50 @@ use serde_yaml;
 use std::env;
 use std::fs::File;
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub fn load_config_from_file<T, P>(path: P) -> Option<T>
 where
     T: for<'de> Deserialize<'de>,
-    P: AsRef<std::path::Path>,
+    P: AsRef<Path> + std::fmt::Debug,
 {
-    let mut file = File::open(path).ok()?;
+    // 1. 将传入的路径转换为绝对路径
+    let path_buf: PathBuf = path.as_ref().to_path_buf();
+    let absolute_path = match path_buf.canonicalize() {
+        Ok(abs_path) => abs_path,
+        Err(e) => {
+            log::warn!(
+                "failed to convert path to absolute path: {:?}, error: {}",
+                path_buf,
+                e
+            );
+            return None;
+        }
+    };
+
+    // 2. 日志输出绝对路径（更易排查问题）
+    log::debug!("trying to read config file from: {:?}", absolute_path);
+
+    // 3. 使用绝对路径打开文件
+    let mut file = File::open(&absolute_path).ok()?;
     let mut contents = String::new();
     file.read_to_string(&mut contents).ok()?;
-    serde_yaml::from_str(&contents).ok()
+
+    // 4. 反序列化配置内容
+    match serde_yaml::from_str(&contents) {
+        Ok(config) => Some(config),
+        Err(e) => {
+            // 输出详细的反序列化错误，包含文件路径和具体错误信息
+            log::error!(
+                "failed to deserialize config file: {:?}, error: {}",
+                absolute_path,
+                e
+            );
+            // 可选：输出配置文件内容片段，方便定位格式问题（如果内容不敏感）
+            // log::debug!("config file contents: {}", contents);
+            None
+        }
+    }
 }
 
 /// Loads configuration from environment-specific or default YAML files.

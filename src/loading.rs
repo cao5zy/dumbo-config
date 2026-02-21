@@ -34,6 +34,7 @@ where
 
     // Add file source if specified
     if let Some(file_path) = param.file {
+        log::debug!("trying to load config file: {:?}", file_path);
         config_builder = add_file_source(config_builder, file_path)?;
     }
 
